@@ -2,6 +2,9 @@
 
 default_stages = ["pre-commit"]
 
+# Vendored third-party files are left as upstream ships them.
+exclude = "^(static/vendor|apps/ui/vendor)/"
+
 default_install_hook_types = [
     "pre-commit",
     "commit-msg",

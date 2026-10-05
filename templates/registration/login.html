@@ -1,5 +1,5 @@
 {% extends "registration/layout.html" %}
-{% load static %}
+{% load icons static %}
 
 {% block title %}Sign in · kosha{% endblock %}
 
@@ -14,7 +14,7 @@
 
     {% for error in form.non_field_errors %}
       <div class="mb-5 flex gap-2.5 rounded-lg bg-red-50 px-3.5 py-3 text-sm text-red-800 ring-1 ring-red-200 ring-inset" role="alert">
-        <svg class="mt-0.5 size-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM9 6a1 1 0 1 1 2 0v4a1 1 0 1 1-2 0V6Zm1 9a1.25 1.25 0 1 0 0-2.5A1.25 1.25 0 0 0 10 15Z" clip-rule="evenodd"/></svg>
+        {% icon "circle-alert" class="mt-0.5 size-4 shrink-0" %}
         <span>{{ error }}</span>
       </div>
     {% endfor %}

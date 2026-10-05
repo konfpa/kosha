@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+@source not "../../static/vendor";
+@source not "../../apps/ui/vendor";
+
 @theme {
   --color-brand: #0E5A5B;
   --color-brand-dark: #0B4849;
@@ -7,6 +10,10 @@
 }
 
 @layer base {
+  [x-cloak] {
+    display: none !important;
+  }
+
   html {
     -webkit-tap-highlight-color: transparent;
   }
