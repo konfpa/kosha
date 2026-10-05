@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+  <div class="flex min-h-screen flex-col bg-stone-100">
+    <header class="flex items-center justify-between border-b border-stone-200 bg-white px-6 py-4">
+      <img src="{% static 'img/logo.svg' %}" alt="kosha" class="h-6 w-auto">
+      <div class="flex items-center gap-4 text-sm">
+        <span class="hidden text-stone-500 sm:inline">{{ user.email }}</span>
+        <form method="post" action="{% url 'logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="rounded-lg px-3 py-1.5 font-medium text-stone-700 ring-1 ring-stone-300 hover:bg-stone-50">Sign out</button>
+        </form>
+      </div>
+    </header>
+    <main class="flex flex-1 flex-col items-center justify-center px-4 py-16 text-center">
+      <h1 class="text-xl font-semibold tracking-tight text-stone-900">Welcome, {{ user.get_short_name }}</h1>
+      <p class="mt-1 text-sm text-stone-500">Nothing here yet. Your ledger is on its way.</p>
+    </main>
+  </div>
+{% endblock %}

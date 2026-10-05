@@ -50,6 +50,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "apps.accounts.sessions.max_age_middleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -88,6 +89,12 @@ CACHES = {
 # Authentication
 
 AUTH_USER_MODEL = "accounts.User"
+
+LOGIN_URL = "login"
+
+LOGIN_REDIRECT_URL = "home"
+
+LOGOUT_REDIRECT_URL = "login"
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -182,3 +189,15 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool(
 )
 
 SECURE_HSTS_PRELOAD = env.bool("SECURE_HSTS_PRELOAD", default=False)
+
+
+# Sessions. Both ages slide forward on every request; SESSION_MAX_AGE is an
+# absolute cap from login enforced by apps.accounts.sessions.max_age_middleware.
+
+SESSION_SAVE_EVERY_REQUEST = True
+
+SESSION_COOKIE_AGE = env.int("SESSION_COOKIE_AGE", default=30 * 24 * 60 * 60)
+
+SESSION_SHORT_AGE = env.int("SESSION_SHORT_AGE", default=12 * 60 * 60)
+
+SESSION_MAX_AGE = env.int("SESSION_MAX_AGE", default=90 * 24 * 60 * 60)

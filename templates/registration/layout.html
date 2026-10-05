@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+  <div class="flex min-h-screen flex-col bg-stone-100">
+    <div class="flex h-1">
+      <span class="flex-1 bg-brand"></span>
+      <span class="w-16 bg-accent"></span>
+    </div>
+    <main class="flex flex-1 flex-col items-center justify-center px-4 py-16">
+      {% block page %}{% endblock %}
+    </main>
+  </div>
+  <script src="{% static 'js/auth.js' %}" defer></script>
+{% endblock %}

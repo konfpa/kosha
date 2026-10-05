@@ -1,0 +1,8 @@
+<label for="{{ field.id_for_label }}" class="block text-sm font-medium text-stone-700">Email</label>
+<input id="{{ field.id_for_label }}" name="{{ field.html_name }}" type="email" autocomplete="email" required
+       value="{{ field.value|default_if_none:'' }}" {% if autofocus %}autofocus{% endif %}
+       {% if field.errors %}aria-invalid="true" aria-describedby="{{ field.id_for_label }}-error"{% endif %}
+       class="field mt-1.5">
+{% for error in field.errors %}
+  <p id="{{ field.id_for_label }}-error" class="mt-1.5 text-xs text-red-600">{{ error }}</p>
+{% endfor %}

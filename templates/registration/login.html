@@ -1,0 +1,38 @@
+{% extends "registration/layout.html" %}
+{% load static %}
+
+{% block title %}Sign in · kosha{% endblock %}
+
+{% block page %}
+  <img src="{% static 'img/mark.svg' %}" alt="kosha" class="size-11">
+  <h1 class="mt-5 text-xl font-semibold tracking-tight text-stone-900">Sign in to kosha</h1>
+  <p class="mt-1 text-sm text-stone-500">Welcome back. Your ledger is where you left it.</p>
+
+  <form method="post" data-busy="Signing in…" class="card mt-8" novalidate>
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+
+    {% for error in form.non_field_errors %}
+      <div class="mb-5 flex gap-2.5 rounded-lg bg-red-50 px-3.5 py-3 text-sm text-red-800 ring-1 ring-red-200 ring-inset" role="alert">
+        <svg class="mt-0.5 size-4 shrink-0" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM9 6a1 1 0 1 1 2 0v4a1 1 0 1 1-2 0V6Zm1 9a1.25 1.25 0 1 0 0-2.5A1.25 1.25 0 0 0 10 15Z" clip-rule="evenodd"/></svg>
+        <span>{{ error }}</span>
+      </div>
+    {% endfor %}
+
+    {% include "registration/_email_field.html" with field=form.username autofocus=True %}
+
+    <div class="mt-5 flex items-baseline justify-between">
+      <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-stone-700">Password</label>
+      <a href="{% url 'password_reset' %}" class="text-xs font-medium text-brand hover:underline">Forgot password?</a>
+    </div>
+    {% include "registration/_password_input.html" with field=form.password autocomplete="current-password" %}
+    <p data-caps class="mt-1.5 text-xs text-amber-700" hidden>Caps Lock is on.</p>
+
+    <label class="mt-5 flex items-center gap-2.5 text-sm text-stone-600">
+      <input type="checkbox" name="{{ form.remember.html_name }}" {% if form.remember.value %}checked{% endif %} class="size-4 rounded border-stone-300 accent-brand">
+      Keep me signed in on this device
+    </label>
+
+    <button type="submit" class="btn-primary mt-6">Sign in</button>
+  </form>
+{% endblock %}

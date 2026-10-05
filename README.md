@@ -19,6 +19,7 @@ uv sync
 uv run prek install
 cp .env.example .env  # then set SECRET_KEY; see comments in the file
 uv run manage.py migrate
+uv run manage.py createsuperuser  # no public sign-up; add others in /admin/
 uv run manage.py runserver
 ```
 

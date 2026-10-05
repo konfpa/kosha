@@ -1,1 +1,36 @@
 @import "tailwindcss";
+
+@theme {
+  --color-brand: #0E5A5B;
+  --color-brand-dark: #0B4849;
+  --color-accent: #E0A43A;
+}
+
+@layer components {
+  .card {
+    @apply w-full max-w-sm rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgb(0_0_0/0.04),0_8px_24px_-12px_rgb(0_0_0/0.08)] ring-1 ring-stone-200 sm:p-8;
+  }
+
+  .field {
+    @apply block h-11 w-full rounded-lg border border-stone-300 bg-white px-3.5 text-sm text-stone-900 outline-none focus:border-brand focus:ring-4 focus:ring-brand/10;
+  }
+
+  .field[aria-invalid="true"] {
+    @apply border-red-400 focus:border-red-500 focus:ring-red-500/10;
+  }
+
+  .btn-primary {
+    @apply flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-brand text-sm font-semibold text-white hover:bg-brand-dark focus:ring-4 focus:ring-brand/25 focus:outline-none disabled:opacity-70;
+  }
+}
+
+/* Browsers' own reveal buttons would double up with ours. Edge's can be
+   hidden directly; Firefox's (on in forks like Waterfox) can't be selected
+   from a page, but dropping the native password appearance removes it. */
+input::-ms-reveal {
+  display: none;
+}
+
+input[type="password"] {
+  appearance: textfield;
+}
