@@ -6,6 +6,7 @@ const PRECACHE = [
   OFFLINE_URL,
   new URL("{% static 'css/app.css' %}", self.location).href,
   new URL("{% static 'img/mark.svg' %}", self.location).href,
+  new URL("{% static 'img/mark-light.svg' %}", self.location).href,
 ];
 
 self.addEventListener("install", (event) => {

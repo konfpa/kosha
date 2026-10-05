@@ -49,7 +49,7 @@ document.querySelectorAll("[data-rules-for]").forEach((list) => {
     for (const [rule, check] of Object.entries(checks)) {
       const item = list.querySelector(`[data-rule=${rule}]`);
       const pass = check(input.value);
-      item.classList.toggle("text-brand", pass);
+      item.classList.toggle("text-brand-ink", pass);
       item.firstElementChild.classList.toggle("bg-brand", pass);
       item.firstElementChild.classList.toggle("bg-stone-300", !pass);
     }

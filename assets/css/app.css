@@ -3,13 +3,22 @@
 @source not "../../static/vendor";
 @source not "../../apps/ui/vendor";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-brand: #0E5A5B;
   --color-brand-dark: #0B4849;
   --color-accent: #E0A43A;
+  /* Brand-coloured text; the brand teal itself is too dark to read on dark surfaces. */
+  --color-brand-ink: #0E5A5B;
 }
 
 @layer base {
+  .dark {
+    color-scheme: dark;
+    --color-brand-ink: #5FBFC0;
+  }
+
   [x-cloak] {
     display: none !important;
   }
@@ -29,15 +38,15 @@
 
 @layer components {
   .card {
-    @apply w-full max-w-sm rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgb(0_0_0/0.04),0_8px_24px_-12px_rgb(0_0_0/0.08)] ring-1 ring-stone-200 sm:p-8;
+    @apply w-full max-w-sm rounded-2xl bg-white p-6 shadow-[0_1px_2px_rgb(0_0_0/0.04),0_8px_24px_-12px_rgb(0_0_0/0.08)] ring-1 ring-stone-200 sm:p-8 dark:bg-stone-900 dark:shadow-none dark:ring-stone-800;
   }
 
   .field {
-    @apply block h-11 w-full rounded-lg border border-stone-300 bg-white px-3.5 text-base text-stone-900 sm:text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/10;
+    @apply block h-11 w-full rounded-lg border border-stone-300 bg-white px-3.5 text-base text-stone-900 sm:text-sm outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 dark:border-stone-700 dark:bg-stone-950 dark:text-stone-100 dark:focus:border-brand-ink dark:focus:ring-brand-ink/15;
   }
 
   .field[aria-invalid="true"] {
-    @apply border-red-400 focus:border-red-500 focus:ring-red-500/10;
+    @apply border-red-400 focus:border-red-500 focus:ring-red-500/10 dark:border-red-500/70;
   }
 
   .btn-primary {

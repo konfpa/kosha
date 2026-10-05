@@ -1,0 +1,6 @@
+{% load icons %}
+<button type="button" onclick="toggleTheme()" aria-label="Toggle dark mode"
+        class="rounded-lg p-2 text-stone-500 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100">
+  {% icon "moon" class="size-5 dark:hidden" %}
+  {% icon "sun" class="hidden size-5 dark:block" %}
+</button>

@@ -4,13 +4,13 @@
 {% block title %}Sign-in paused · kosha{% endblock %}
 
 {% block page %}
-  <span class="flex size-12 items-center justify-center rounded-full bg-accent/15 text-amber-700">
+  <span class="flex size-12 items-center justify-center rounded-full bg-accent/15 text-amber-700 dark:text-amber-400">
     {% icon "lock" class="size-6" stroke_width=1.75 %}
   </span>
-  <h1 class="mt-5 text-xl font-semibold tracking-tight text-stone-900">Too many sign-in attempts</h1>
-  <p class="mt-1 max-w-xs text-center text-sm text-stone-500">To protect your account, sign-in is paused for an hour.</p>
+  <h1 class="mt-5 text-xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">Too many sign-in attempts</h1>
+  <p class="mt-1 max-w-xs text-center text-sm text-stone-500 dark:text-stone-400">To protect your account, sign-in is paused for an hour.</p>
 
-  <div class="card mt-8 text-sm text-stone-600">
+  <div class="card mt-8 text-sm text-stone-600 dark:text-stone-400">
     <p>Each new attempt while paused restarts the hour, so wait it out before trying again.</p>
     <p class="mt-3">Forgotten your password? Reset it now and sign in with the new one once the hour is up.</p>
     <a href="{% url 'password_reset' %}" class="btn-primary mt-6">Reset password</a>
