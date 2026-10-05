@@ -52,6 +52,10 @@
   .btn-primary {
     @apply flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-brand text-sm font-semibold text-white hover:bg-brand-dark focus:ring-4 focus:ring-brand/25 focus:outline-none disabled:opacity-70;
   }
+
+  .btn-secondary {
+    @apply flex h-11 items-center justify-center gap-2 rounded-lg px-4 text-sm font-medium text-stone-700 ring-1 ring-stone-300 ring-inset hover:bg-stone-50 focus:ring-4 focus:ring-stone-300/40 focus:outline-none dark:text-stone-300 dark:ring-stone-700 dark:hover:bg-stone-800;
+  }
 }
 
 /* Browsers' own reveal buttons would double up with ours. Edge's can be

@@ -26,6 +26,7 @@ urlpatterns = [
         "", login_required(TemplateView.as_view(template_name="home.html")), name="home"
     ),
     path("", include("apps.accounts.urls")),
+    path("", include("apps.ledger.urls")),
     path(
         "manifest.webmanifest",
         TemplateView.as_view(

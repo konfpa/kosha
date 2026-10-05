@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "axes",
     "apps.accounts",
     "apps.ui",
+    "apps.ledger",
 ]
 
 MIDDLEWARE = [

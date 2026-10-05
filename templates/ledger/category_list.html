@@ -1,0 +1,44 @@
+{% extends "app.html" %}
+{% load categories icons %}
+
+{% block title %}Categories · kosha{% endblock %}
+
+{% block main %}
+  <div class="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
+    <div class="flex items-center justify-between gap-4">
+      <h1 class="text-xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">Categories</h1>
+      {% if categories %}
+        <a href="{% url 'category_create' %}" class="btn-primary w-auto px-4">
+          {% icon "plus" class="size-4" %}
+          New category
+        </a>
+      {% endif %}
+    </div>
+
+    {% if categories %}
+      <ul class="mt-6 divide-y divide-stone-100 overflow-hidden rounded-2xl bg-white ring-1 ring-stone-200 dark:divide-stone-800 dark:bg-stone-900 dark:ring-stone-800">
+        {% for category in categories %}
+          <li>
+            <a href="{% url 'category_edit' category.pk %}" class="flex items-center gap-3 px-4 py-3.5 hover:bg-stone-50 dark:hover:bg-stone-800/50">
+              {% category_icon category %}
+              <span class="min-w-0 flex-1 truncate text-sm font-medium text-stone-900 dark:text-stone-100">{{ category.name }}</span>
+              {% icon "chevron-right" class="size-4 shrink-0 text-stone-400 dark:text-stone-500" %}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="mt-6 flex flex-col items-center rounded-2xl bg-white px-6 py-14 text-center ring-1 ring-stone-200 dark:bg-stone-900 dark:ring-stone-800">
+        <span class="flex size-12 items-center justify-center rounded-full bg-brand/10 text-brand-ink dark:bg-brand-ink/10">
+          {% icon "tags" class="size-6" %}
+        </span>
+        <h2 class="mt-4 text-base font-semibold text-stone-900 dark:text-stone-100">No categories yet</h2>
+        <p class="mt-1 max-w-xs text-sm text-stone-500 dark:text-stone-400">Categories group your spending and income, like Groceries, Rent or Salary.</p>
+        <a href="{% url 'category_create' %}" class="btn-primary mt-6 w-auto px-4">
+          {% icon "plus" class="size-4" %}
+          New category
+        </a>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
