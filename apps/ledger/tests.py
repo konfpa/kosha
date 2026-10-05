@@ -71,6 +71,23 @@ class CategoryListTests(TestCase):
         self.assertContains(response, "text-emerald-600 dark:text-emerald-400")
         self.assertContains(response, reverse("category_edit", args=[category.pk]))
 
+    def test_shows_description_but_not_note(self):
+        self.user.categories.create(
+            name="Groceries",
+            icon="tag",
+            colour="red",
+            description="Supermarket, not eating out",
+            note="Budget 8k a month",
+        )
+        response = self.client.get(reverse("category_list"))
+        self.assertContains(response, "Supermarket, not eating out")
+        self.assertNotContains(response, "Budget 8k a month")
+
+    def test_category_without_description_shows_only_its_name(self):
+        self.user.categories.create(name="Rent", icon="house", colour="blue")
+        response = self.client.get(reverse("category_list"))
+        self.assertRegex(response.content.decode(), r">Rent</span>\s*</span>")
+
     def test_sidebar_marks_categories_active_on_every_categories_page(self):
         category = self.user.categories.create(name="Rent", icon="house", colour="blue")
         list_url = reverse("category_list")
@@ -125,11 +142,38 @@ class CreateCategoryTests(TestCase):
             ("Groceries", "shopping-cart", "emerald"),
         )
 
+    def test_saves_trimmed_description_and_note(self):
+        self.create(
+            description="  Supermarket ", note="\n Budget 8k\r\n- no takeaway \n"
+        )
+        category = self.user.categories.get()
+        self.assertEqual(
+            (category.description, category.note),
+            ("Supermarket", "Budget 8k\n- no takeaway"),
+        )
+
+    def test_description_and_note_are_optional(self):
+        response = self.create(description="   ")
+        self.assertRedirects(response, reverse("category_list"))
+        category = self.user.categories.get()
+        self.assertEqual((category.description, category.note), ("", ""))
+
+    def test_note_line_breaks_count_as_one_character(self):
+        response = self.create(note="x" * 499 + "\r\n" + "x" * 500)
+        self.assertRedirects(response, reverse("category_list"))
+        self.assertEqual(len(self.user.categories.get().note), 1000)
+
     def test_rejects_duplicate_name_ignoring_case(self):
         self.user.categories.create(name="Groceries", icon="tag", colour="red")
         response = self.create(name="groceries")
         self.assertContains(response, "You already have a category called")
         self.assertEqual(self.user.categories.count(), 1)
+
+    def test_failed_save_keeps_description_and_note(self):
+        self.user.categories.create(name="Groceries", icon="tag", colour="red")
+        response = self.create(description="Supermarket", note="Line one\nLine two")
+        self.assertContains(response, 'value="Supermarket"')
+        self.assertContains(response, ">\nLine one\nLine two</textarea>")
 
     def test_other_users_names_do_not_clash(self):
         make_user("bob@example.com").categories.create(
@@ -145,6 +189,8 @@ class CreateCategoryTests(TestCase):
             "long name": ({"name": "x" * 51}, "at most 50 characters"),
             "unknown icon": ({"icon": "skull"}, "Select a valid choice."),
             "unknown colour": ({"colour": "black"}, "Select a valid choice."),
+            "long description": ({"description": "x" * 121}, "at most 120 characters"),
+            "long note": ({"note": "x" * 1001}, "at most 1000 characters"),
         }
         for label, (data, error) in cases.items():
             with self.subTest(label):
@@ -160,7 +206,11 @@ class EditCategoryTests(TestCase):
         self.user = make_user()
         self.client.force_login(self.user)
         self.category = self.user.categories.create(
-            name="Groceries", icon="shopping-cart", colour="emerald"
+            name="Groceries",
+            icon="shopping-cart",
+            colour="emerald",
+            description="Supermarket",
+            note="Line one\nLine two",
         )
         self.url = reverse("category_edit", args=[self.category.pk])
 
@@ -175,6 +225,8 @@ class EditCategoryTests(TestCase):
         self.assertContains(response, 'value="Groceries"')
         self.assertEqual(checked_value(response, "icon"), "shopping-cart")
         self.assertEqual(checked_value(response, "colour"), "emerald")
+        self.assertContains(response, 'value="Supermarket"')
+        self.assertContains(response, ">\nLine one\nLine two</textarea>")
         self.assertContains(response, "Delete <em>Groceries</em>?")
         self.assertContains(
             response, reverse("category_delete", args=[self.category.pk])
@@ -188,6 +240,23 @@ class EditCategoryTests(TestCase):
             (self.category.name, self.category.icon, self.category.colour),
             ("Food", "apple", "red"),
         )
+
+    def test_changes_and_clears_description_and_note(self):
+        cases = {
+            "change": (
+                {"description": "Food", "note": "New note"},
+                ("Food", "New note"),
+            ),
+            "clear": ({"description": "", "note": ""}, ("", "")),
+        }
+        for label, (data, expected) in cases.items():
+            with self.subTest(label):
+                response = self.edit(**data)
+                self.assertRedirects(response, reverse("category_list"))
+                self.category.refresh_from_db()
+                self.assertEqual(
+                    (self.category.description, self.category.note), expected
+                )
 
     def test_keeping_the_name_is_not_a_duplicate(self):
         response = self.edit(name="groceries", colour="red")
@@ -205,10 +274,20 @@ class EditCategoryTests(TestCase):
         self.assertEqual(self.category.name, "Groceries")
 
     def test_rejects_invalid_input(self):
-        response = self.edit(name="x" * 51)
-        self.assertContains(response, "at most 50 characters")
+        cases = {
+            "long name": ({"name": "x" * 51}, "at most 50 characters"),
+            "long description": ({"description": "x" * 121}, "at most 120 characters"),
+            "long note": ({"note": "x" * 1001}, "at most 1000 characters"),
+        }
+        for label, (data, error) in cases.items():
+            with self.subTest(label):
+                response = self.edit(**data)
+                self.assertContains(response, error)
         self.category.refresh_from_db()
-        self.assertEqual(self.category.name, "Groceries")
+        self.assertEqual(
+            (self.category.name, self.category.description, self.category.note),
+            ("Groceries", "Supermarket", "Line one\nLine two"),
+        )
 
 
 @plain_static

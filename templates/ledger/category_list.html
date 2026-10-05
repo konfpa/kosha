@@ -21,7 +21,12 @@
           <li>
             <a href="{% url 'category_edit' category.pk %}" class="flex items-center gap-3 px-4 py-3.5 hover:bg-stone-50 dark:hover:bg-stone-800/50">
               {% category_icon category %}
-              <span class="min-w-0 flex-1 truncate text-sm font-medium text-stone-900 dark:text-stone-100">{{ category.name }}</span>
+              <span class="min-w-0 flex-1">
+                <span class="block truncate text-sm font-medium text-stone-900 dark:text-stone-100">{{ category.name }}</span>
+                {% if category.description %}
+                  <span class="mt-0.5 block truncate text-xs text-stone-500 dark:text-stone-400">{{ category.description }}</span>
+                {% endif %}
+              </span>
               {% icon "chevron-right" class="size-4 shrink-0 text-stone-400 dark:text-stone-500" %}
             </a>
           </li>

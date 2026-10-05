@@ -21,6 +21,8 @@ class Category(models.Model):
     # Callables keep migrations from churning whenever the lists change.
     icon = models.CharField(max_length=50, choices=icon_choices)
     colour = models.CharField(max_length=20, choices=colour_choices)
+    description = models.CharField(max_length=120, blank=True, default="")
+    note = models.TextField(blank=True, default="")
 
     class Meta:
         ordering = [Lower("name")]
