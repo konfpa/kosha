@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load icons static %}
+
+{% block content %}
+  <div class="flex min-h-screen bg-stone-100"
+       x-data="{
+         collapsed: (() => { try { return localStorage.getItem('sidebar') === 'collapsed' } catch { return false } })(),
+         drawer: false,
+         ready: false,
+         toggle() {
+           this.collapsed = !this.collapsed
+           try { localStorage.setItem('sidebar', this.collapsed ? 'collapsed' : 'expanded') } catch {}
+         },
+       }"
+       x-init="$nextTick(() => ready = true)"
+       @keydown.escape.window="drawer = false">
+    <div x-cloak x-show="drawer" x-transition.opacity @click="drawer = false" class="fixed inset-0 z-20 bg-stone-900/30 lg:hidden"></div>
+
+    <aside :class="[drawer ? 'translate-x-0' : '-translate-x-full', collapsed ? 'lg:w-16' : '', ready ? 'transition-[translate,width] duration-200' : '']"
+           class="fixed inset-y-0 left-0 z-30 flex w-64 -translate-x-full flex-col border-r border-stone-200 bg-white lg:sticky lg:top-0 lg:h-screen lg:translate-x-0">
+      <div class="flex h-[69px] shrink-0 items-center justify-between border-b border-stone-200 px-4">
+        <a href="{% url 'home' %}" class="flex items-center">
+          <span :class="collapsed && 'lg:hidden'">
+            <img src="{% static 'img/logo.svg' %}" alt="kosha" class="h-6 w-auto">
+          </span>
+          <span class="hidden" :class="collapsed && 'lg:block'">
+            <img src="{% static 'img/mark.svg' %}" alt="kosha" class="size-8">
+          </span>
+        </a>
+        <button type="button" @click="drawer = false" aria-label="Close menu" class="rounded-lg p-1.5 text-stone-500 hover:bg-stone-100 lg:hidden">
+          {% icon "x" class="size-5" %}
+        </button>
+      </div>
+
+      <nav class="flex-1 space-y-1 overflow-y-auto p-3 text-sm">
+        {% url 'home' as home_url %}
+        <a href="{{ home_url }}" :title="collapsed && 'Home'"
+           class="flex items-center gap-3 rounded-lg px-2.5 py-2 font-medium {% if request.path == home_url %}bg-brand/10 text-brand{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900{% endif %}">
+          {% icon "house" class="size-5 shrink-0" %}
+          <span :class="collapsed && 'lg:hidden'">Home</span>
+        </a>
+      </nav>
+    </aside>
+
+    <div class="flex min-w-0 flex-1 flex-col">
+      <header class="flex h-[69px] items-center justify-between border-b border-stone-200 bg-white px-4 sm:px-6">
+        <div class="flex items-center gap-3">
+          <button type="button" @click="drawer = true" aria-label="Open menu" class="-ml-1.5 rounded-lg p-1.5 text-stone-600 hover:bg-stone-100 lg:hidden">
+            {% icon "menu" class="size-5" %}
+          </button>
+          <button type="button" @click="toggle()" :aria-label="collapsed ? 'Expand sidebar' : 'Collapse sidebar'" :aria-expanded="!collapsed"
+                  class="-ml-1.5 hidden rounded-lg p-1.5 text-stone-600 hover:bg-stone-100 lg:block">
+            <span x-show="!collapsed">{% icon "panel-left-close" class="size-5" %}</span>
+            <span x-cloak x-show="collapsed">{% icon "panel-left-open" class="size-5" %}</span>
+          </button>
+          <span class="lg:hidden">
+            <img src="{% static 'img/logo.svg' %}" alt="kosha" class="h-6 w-auto">
+          </span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="relative" x-data="{ open: false }" @keydown.escape.window="open = false" @click.outside="open = false">
+            <button type="button" @click="open = !open" :aria-expanded="open" aria-haspopup="menu" aria-label="Account menu"
+                    class="flex size-9 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white hover:bg-brand-dark focus:ring-4 focus:ring-brand/25 focus:outline-none">
+              {{ user.full_name|first|upper }}
+            </button>
+            <div x-cloak x-show="open" x-transition.origin.top.right role="menu"
+                 class="absolute right-0 z-10 mt-2 w-64 rounded-xl bg-white p-1.5 text-sm shadow-lg ring-1 ring-stone-200">
+              <div class="border-b border-stone-100 px-3 py-2.5">
+                <p class="truncate font-medium text-stone-900">{{ user.full_name }}</p>
+                <p class="truncate text-stone-500">{{ user.email }}</p>
+              </div>
+              <form method="post" action="{% url 'logout' %}" class="pt-1.5">
+                {% csrf_token %}
+                <button type="submit" role="menuitem" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-stone-700 hover:bg-stone-100">
+                  {% icon "log-out" class="size-4 text-stone-500" %}
+                  Sign out
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="flex flex-1 flex-col">
+        {% block main %}{% endblock %}
+      </main>
+    </div>
+  </div>
+{% endblock %}

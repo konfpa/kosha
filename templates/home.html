@@ -1,34 +1,8 @@
-{% extends "base.html" %}
-{% load icons static %}
+{% extends "app.html" %}
 
-{% block content %}
-  <div class="flex min-h-screen flex-col bg-stone-100">
-    <header class="flex items-center justify-between border-b border-stone-200 bg-white px-6 py-4">
-      <img src="{% static 'img/logo.svg' %}" alt="kosha" class="h-6 w-auto">
-      <div class="relative" x-data="{ open: false }" @keydown.escape.window="open = false" @click.outside="open = false">
-        <button type="button" @click="open = !open" :aria-expanded="open" aria-haspopup="menu" aria-label="Account menu"
-                class="flex size-9 items-center justify-center rounded-full bg-brand text-sm font-semibold text-white hover:bg-brand-dark focus:ring-4 focus:ring-brand/25 focus:outline-none">
-          {{ user.full_name|first|upper }}
-        </button>
-        <div x-cloak x-show="open" x-transition.origin.top.right role="menu"
-             class="absolute right-0 z-10 mt-2 w-64 rounded-xl bg-white p-1.5 text-sm shadow-lg ring-1 ring-stone-200">
-          <div class="border-b border-stone-100 px-3 py-2.5">
-            <p class="truncate font-medium text-stone-900">{{ user.full_name }}</p>
-            <p class="truncate text-stone-500">{{ user.email }}</p>
-          </div>
-          <form method="post" action="{% url 'logout' %}" class="pt-1.5">
-            {% csrf_token %}
-            <button type="submit" role="menuitem" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-stone-700 hover:bg-stone-100">
-              {% icon "log-out" class="size-4 text-stone-500" %}
-              Sign out
-            </button>
-          </form>
-        </div>
-      </div>
-    </header>
-    <main class="flex flex-1 flex-col items-center justify-center px-4 py-16 text-center">
-      <h1 class="text-xl font-semibold tracking-tight text-stone-900">Welcome, {{ user.get_short_name }}</h1>
-      <p class="mt-1 text-sm text-stone-500">Nothing here yet. Your ledger is on its way.</p>
-    </main>
+{% block main %}
+  <div class="flex flex-1 flex-col items-center justify-center px-4 py-16 text-center">
+    <h1 class="text-xl font-semibold tracking-tight text-stone-900">Welcome, {{ user.get_short_name }}</h1>
+    <p class="mt-1 text-sm text-stone-500">Nothing here yet. Your ledger is on its way.</p>
   </div>
 {% endblock %}
