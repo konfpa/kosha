@@ -20,7 +20,7 @@ def category_list(request):
 
 @login_required
 def category_create(request):
-    initial = {"icon": "tag", "colour": random.choice(list(PALETTE))}  # noqa: S311
+    initial = {"icon": "bookmark", "colour": random.choice(list(PALETTE))}  # noqa: S311
     return _category_form(request, Category(user=request.user), initial)
 
 

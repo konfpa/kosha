@@ -106,7 +106,7 @@ class CreateCategoryTests(TestCase):
 
     def test_form_preselects_tag_and_a_palette_colour(self):
         response = self.client.get(reverse("category_create"))
-        self.assertEqual(checked_value(response, "icon"), "tag")
+        self.assertEqual(checked_value(response, "icon"), "bookmark")
         self.assertIn(checked_value(response, "colour"), PALETTE)
 
     def test_form_offers_every_curated_icon_and_colour(self):

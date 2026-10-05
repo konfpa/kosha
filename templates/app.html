@@ -72,7 +72,7 @@
         {% url 'category_list' as categories_url %}
         <a href="{{ categories_url }}" {% if categories_url in request.path %}aria-current="page"{% endif %} :title="collapsed && 'Categories'"
            class="flex items-center gap-3 rounded-lg px-2.5 py-2 font-medium {% if categories_url in request.path %}bg-brand/10 text-brand-ink dark:bg-brand-ink/10{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100{% endif %}">
-          {% icon "tags" class="size-5 shrink-0" %}
+          {% icon "bookmark" class="size-5 shrink-0" %}
           <span :class="collapsed && 'lg:hidden'">Categories</span>
         </a>
       </nav>

@@ -1,6 +1,6 @@
 # Each entry must be a Lucide icon in apps/ui/vendor.
 ICONS = [
-    ("tag", "Tag"),
+    ("bookmark", "Bookmark"),
     # Food and drink
     ("shopping-cart", "Shopping cart"),
     ("shopping-basket", "Shopping basket"),
@@ -54,6 +54,7 @@ ICONS = [
     ("sparkles", "Beauty"),
     ("store", "Store"),
     ("package", "Package"),
+    ("tag", "Tag"),
     # Entertainment
     ("film", "Film"),
     ("music", "Music"),
