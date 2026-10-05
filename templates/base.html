@@ -3,6 +3,8 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    {# Back and forward refetch the page, since a cached snapshot holds stale data and DOM Alpine has already initialised. #}
+    <meta name="htmx-config" content='{"historyCacheSize": 0}'>
     <title>{% block title %}kosha{% endblock %}</title>
     <script>
       // Runs before first paint so a dark page never flashes light. The

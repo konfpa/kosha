@@ -13,7 +13,10 @@
          },
        }"
        x-init="$nextTick(() => ready = true)"
-       @keydown.escape.window="drawer = false">
+       @keydown.escape.window="drawer = false"
+       @htmx:after-swap="drawer = false"
+       hx-boost="true" hx-target="#main" hx-select="#main" hx-select-oob="#nav" hx-swap="outerHTML show:window:top" hx-indicator="#progress">
+    <div id="progress" class="htmx-indicator pointer-events-none fixed inset-x-0 top-0 z-50 h-0.5 animate-pulse bg-brand"></div>
     <div x-cloak x-show="drawer" x-transition.opacity @click="drawer = false" class="fixed inset-0 z-20 bg-stone-900/30 lg:hidden dark:bg-black/50"></div>
 
     <aside :class="[drawer ? 'translate-x-0' : '-translate-x-full', collapsed ? 'lg:w-16' : '', ready ? 'transition-[translate,width] duration-200' : '']"
@@ -34,7 +37,7 @@
         </button>
       </div>
 
-      <nav class="flex-1 space-y-1 overflow-y-auto p-3 text-sm">
+      <nav id="nav" class="flex-1 space-y-1 overflow-y-auto p-3 text-sm">
         {% url 'home' as home_url %}
         <a href="{{ home_url }}" {% if request.path == home_url %}aria-current="page"{% endif %} :title="collapsed && 'Home'"
            class="flex items-center gap-3 rounded-lg px-2.5 py-2 font-medium {% if request.path == home_url %}bg-brand/10 text-brand-ink dark:bg-brand-ink/10{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100{% endif %}">
@@ -79,7 +82,7 @@
                 <p class="truncate font-medium text-stone-900 dark:text-stone-100">{{ user.full_name }}</p>
                 <p class="truncate text-stone-500 dark:text-stone-400">{{ user.email }}</p>
               </div>
-              <form method="post" action="{% url 'logout' %}" class="pt-1.5">
+              <form method="post" action="{% url 'logout' %}" hx-boost="false" class="pt-1.5">
                 {% csrf_token %}
                 <button type="submit" role="menuitem" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-stone-700 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-stone-800">
                   {% icon "log-out" class="size-4 text-stone-500 dark:text-stone-400" %}
@@ -91,7 +94,7 @@
         </div>
       </header>
 
-      <main class="flex flex-1 flex-col">
+      <main id="main" class="flex flex-1 flex-col">
         {% block main %}{% endblock %}
       </main>
     </div>
