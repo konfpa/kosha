@@ -27,6 +27,12 @@
     -webkit-tap-highlight-color: transparent;
   }
 
+  /* Tailwind 4 leaves buttons on the default cursor. */
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
+
   /* Drops the double-tap-to-zoom delay on taps; pinch zoom still works. */
   a,
   button,
