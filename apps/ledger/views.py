@@ -5,8 +5,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from .choices import PALETTE
-from .forms import CategoryForm
-from .models import Category
+from .forms import CategoryForm, TagForm
+from .models import Category, Tag
 
 
 @login_required
@@ -45,3 +45,36 @@ def _category_form(request, category, initial=None):
     else:
         form = CategoryForm(instance=category, initial=initial)
     return render(request, "ledger/category_form.html", {"form": form})
+
+
+@login_required
+def tag_list(request):
+    return render(request, "ledger/tag_list.html", {"tags": request.user.tags.all()})
+
+
+@login_required
+def tag_create(request):
+    return _tag_form(request, Tag(user=request.user))
+
+
+@login_required
+def tag_edit(request, pk):
+    return _tag_form(request, get_object_or_404(request.user.tags, pk=pk))
+
+
+@login_required
+@require_POST
+def tag_delete(request, pk):
+    get_object_or_404(request.user.tags, pk=pk).delete()
+    return redirect("tag_list")
+
+
+def _tag_form(request, tag):
+    if request.method == "POST":
+        form = TagForm(request.POST, instance=tag)
+        if form.is_valid():
+            form.save()
+            return redirect("tag_list")
+    else:
+        form = TagForm(instance=tag)
+    return render(request, "ledger/tag_form.html", {"form": form})

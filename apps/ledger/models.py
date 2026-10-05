@@ -35,3 +35,21 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Tag(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="tags"
+    )
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        ordering = [Lower("name")]
+        constraints = [
+            models.UniqueConstraint(
+                "user", Lower("name"), name="unique_tag_name_per_user"
+            ),
+        ]
+
+    def __str__(self):
+        return self.name

@@ -131,20 +131,9 @@
     </form>
 
     {% if form.instance.pk %}
-      <div x-cloak x-show="confirming" x-transition.opacity class="fixed inset-0 z-40 flex items-center justify-center bg-stone-900/30 p-4 dark:bg-black/50">
-        <div role="alertdialog" aria-modal="true" aria-labelledby="delete-title" aria-describedby="delete-description"
-             @click.outside="confirming = false" x-effect="confirming && $nextTick(() => $refs.cancel.focus())"
-             class="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl ring-1 ring-stone-200 dark:bg-stone-900 dark:ring-stone-800">
-          {# The instance holds any unsaved edits after a failed submit; initial is what's stored. #}
-          <h2 id="delete-title" class="text-base font-semibold text-stone-900 dark:text-stone-100">Delete <em>{{ form.initial.name }}</em>?</h2>
-          <p id="delete-description" class="mt-1 text-sm text-stone-500 dark:text-stone-400">This can't be undone.</p>
-          <form method="post" action="{% url 'category_delete' form.instance.pk %}" class="mt-6 flex justify-end gap-2">
-            {% csrf_token %}
-            <button type="button" x-ref="cancel" @click="confirming = false" class="btn-secondary">Cancel</button>
-            <button type="submit" class="flex h-11 items-center rounded-lg bg-red-600 px-4 text-sm font-semibold text-white hover:bg-red-700 focus:ring-4 focus:ring-red-600/25 focus:outline-none">Delete</button>
-          </form>
-        </div>
-      </div>
+      {# The instance holds any unsaved edits after a failed submit; initial is what's stored. #}
+      {% url 'category_delete' form.instance.pk as delete_url %}
+      {% include "includes/delete_dialog.html" with name=form.initial.name action=delete_url %}
     {% endif %}
   </div>
 {% endblock %}

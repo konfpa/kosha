@@ -33,6 +33,20 @@ class SignedOutTests(TestCase):
                     response = method(url)
                     self.assertRedirects(response, f"{reverse('login')}?next={url}")
 
+    def test_every_tag_url_redirects_to_login(self):
+        tag = make_user().tags.create(name="gift")
+        urls = [
+            reverse("tag_list"),
+            reverse("tag_create"),
+            reverse("tag_edit", args=[tag.pk]),
+            reverse("tag_delete", args=[tag.pk]),
+        ]
+        for url in urls:
+            for method in (self.client.get, self.client.post):
+                with self.subTest(url=url, method=method.__name__):
+                    response = method(url)
+                    self.assertRedirects(response, f"{reverse('login')}?next={url}")
+
 
 @plain_static
 class CategoryListTests(TestCase):
@@ -333,3 +347,204 @@ class OtherUsersCategoryTests(TestCase):
         response = self.client.post(reverse("category_delete", args=[self.category.pk]))
         self.assertEqual(response.status_code, 404)
         self.category.refresh_from_db()
+
+
+@plain_static
+class TagListTests(TestCase):
+    def setUp(self):
+        self.user = make_user()
+        self.client.force_login(self.user)
+
+    def test_empty_state_offers_new_tag(self):
+        response = self.client.get(reverse("tag_list"))
+        self.assertContains(response, "No tags yet")
+        self.assertContains(response, reverse("tag_create"))
+
+    def test_lists_own_tags_alphabetically_ignoring_case(self):
+        for name in ("reimbursable", "Gift", "goa-trip-2026", "Bills"):
+            self.user.tags.create(name=name)
+        make_user("bob@example.com").tags.create(name="Bob secret")
+
+        response = self.client.get(reverse("tag_list"))
+
+        content = response.content.decode()
+        positions = [
+            content.index(f">{name}<")
+            for name in ("Bills", "Gift", "goa-trip-2026", "reimbursable")
+        ]
+        self.assertEqual(positions, sorted(positions))
+        self.assertNotContains(response, "Bob secret")
+        self.assertNotContains(response, "No tags yet")
+
+    def test_links_each_tag_to_its_edit_page(self):
+        tag = self.user.tags.create(name="gift")
+        response = self.client.get(reverse("tag_list"))
+        self.assertContains(response, reverse("tag_edit", args=[tag.pk]))
+
+    def test_sidebar_marks_tags_active_on_every_tags_page(self):
+        tag = self.user.tags.create(name="gift")
+        list_url = reverse("tag_list")
+        for url in (
+            list_url,
+            reverse("tag_create"),
+            reverse("tag_edit", args=[tag.pk]),
+        ):
+            with self.subTest(url=url):
+                response = self.client.get(url)
+                self.assertContains(response, 'aria-current="page"', count=1)
+                self.assertContains(response, f'href="{list_url}" aria-current="page"')
+
+    def test_sidebar_groups_categories_and_tags_under_classification(self):
+        for url in (reverse("home"), reverse("tag_list")):
+            with self.subTest(url=url):
+                content = self.client.get(url).content.decode()
+                positions = [
+                    content.index(">Classification<"),
+                    content.index(f'href="{reverse("category_list")}"'),
+                    content.index(f'href="{reverse("tag_list")}"'),
+                ]
+                self.assertEqual(positions, sorted(positions))
+
+
+@plain_static
+class CreateTagTests(TestCase):
+    def setUp(self):
+        self.user = make_user()
+        self.client.force_login(self.user)
+
+    def create(self, name):
+        return self.client.post(reverse("tag_create"), {"name": name})
+
+    def test_form_asks_only_for_a_name(self):
+        response = self.client.get(reverse("tag_create"))
+        self.assertContains(response, "New tag")
+        self.assertContains(response, 'name="name"')
+        self.assertNotContains(response, 'name="icon"')
+        self.assertNotContains(response, 'name="colour"')
+
+    def test_valid_create_saves_trimmed_name_as_typed_and_redirects_to_list(self):
+        response = self.create("  Goa Trip-2026 ")
+        self.assertRedirects(response, reverse("tag_list"))
+        self.assertEqual(self.user.tags.get().name, "Goa Trip-2026")
+
+    def test_rejects_duplicate_name_ignoring_case(self):
+        self.user.tags.create(name="Gift")
+        response = self.create("gift")
+        self.assertContains(response, "You already have a tag called “gift”.")
+        self.assertEqual(self.user.tags.count(), 1)
+
+    def test_other_users_names_do_not_clash(self):
+        make_user("bob@example.com").tags.create(name="gift")
+        response = self.create("gift")
+        self.assertRedirects(response, reverse("tag_list"))
+
+    def test_may_share_a_name_with_a_category(self):
+        self.user.categories.create(name="Gift", icon="gift", colour="red")
+        response = self.create("Gift")
+        self.assertRedirects(response, reverse("tag_list"))
+
+    def test_rejects_invalid_input(self):
+        cases = {
+            "blank name": ("", "This field is required."),
+            "whitespace name": ("   ", "This field is required."),
+            "long name": ("x" * 51, "at most 50 characters"),
+        }
+        for label, (name, error) in cases.items():
+            with self.subTest(label):
+                response = self.create(name)
+                self.assertEqual(response.status_code, 200)
+                self.assertContains(response, error)
+        self.assertFalse(self.user.tags.exists())
+
+
+@plain_static
+class EditTagTests(TestCase):
+    def setUp(self):
+        self.user = make_user()
+        self.client.force_login(self.user)
+        self.tag = self.user.tags.create(name="Gift")
+        self.url = reverse("tag_edit", args=[self.tag.pk])
+
+    def edit(self, name):
+        return self.client.post(self.url, {"name": name})
+
+    def test_form_shows_current_name_and_delete_confirmation(self):
+        response = self.client.get(self.url)
+        self.assertContains(response, "Edit tag")
+        self.assertContains(response, 'value="Gift"')
+        self.assertContains(response, "Delete <em>Gift</em>?")
+        self.assertContains(response, reverse("tag_delete", args=[self.tag.pk]))
+
+    def test_rename_saves_trimmed_name_and_redirects_to_list(self):
+        response = self.edit(" Present  ")
+        self.assertRedirects(response, reverse("tag_list"))
+        self.tag.refresh_from_db()
+        self.assertEqual(self.tag.name, "Present")
+
+    def test_keeping_the_name_or_changing_its_case_is_not_a_duplicate(self):
+        for name in ("Gift", "gift"):
+            with self.subTest(name):
+                response = self.edit(name)
+                self.assertRedirects(response, reverse("tag_list"))
+                self.tag.refresh_from_db()
+                self.assertEqual(self.tag.name, name)
+
+    def test_rename_rejects_duplicate_name_ignoring_case(self):
+        self.user.tags.create(name="reimbursable")
+        response = self.edit("REIMBURSABLE")
+        self.assertContains(response, "You already have a tag called")
+        self.tag.refresh_from_db()
+        self.assertEqual(self.tag.name, "Gift")
+
+    def test_rejects_invalid_input(self):
+        cases = {
+            "blank name": ("", "This field is required."),
+            "whitespace name": ("   ", "This field is required."),
+            "long name": ("x" * 51, "at most 50 characters"),
+        }
+        for label, (name, error) in cases.items():
+            with self.subTest(label):
+                response = self.edit(name)
+                self.assertContains(response, error)
+                self.assertContains(response, "Delete <em>Gift</em>?")
+        self.tag.refresh_from_db()
+        self.assertEqual(self.tag.name, "Gift")
+
+
+@plain_static
+class DeleteTagTests(TestCase):
+    def setUp(self):
+        self.user = make_user()
+        self.client.force_login(self.user)
+        self.tag = self.user.tags.create(name="Gift")
+        self.url = reverse("tag_delete", args=[self.tag.pk])
+
+    def test_post_deletes_and_redirects_to_list(self):
+        response = self.client.post(self.url)
+        self.assertRedirects(response, reverse("tag_list"))
+        self.assertFalse(self.user.tags.exists())
+
+    def test_get_does_not_delete(self):
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, 405)
+        self.assertTrue(self.user.tags.exists())
+
+
+@plain_static
+class OtherUsersTagTests(TestCase):
+    def setUp(self):
+        self.tag = make_user("bob@example.com").tags.create(name="Bob secret")
+        self.client.force_login(make_user())
+
+    def test_edit_is_not_found(self):
+        url = reverse("tag_edit", args=[self.tag.pk])
+        self.assertEqual(self.client.get(url).status_code, 404)
+        response = self.client.post(url, {"name": "Mine now"})
+        self.assertEqual(response.status_code, 404)
+        self.tag.refresh_from_db()
+        self.assertEqual(self.tag.name, "Bob secret")
+
+    def test_delete_is_not_found(self):
+        response = self.client.post(reverse("tag_delete", args=[self.tag.pk]))
+        self.assertEqual(response.status_code, 404)
+        self.tag.refresh_from_db()

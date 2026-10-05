@@ -69,12 +69,22 @@
           {% icon "house" class="size-5 shrink-0" %}
           <span :class="collapsed && 'lg:hidden'">Home</span>
         </a>
-        {% url 'category_list' as categories_url %}
-        <a href="{{ categories_url }}" {% if categories_url in request.path %}aria-current="page"{% endif %} :title="collapsed && 'Categories'"
-           class="flex items-center gap-3 rounded-lg px-2.5 py-2 font-medium {% if categories_url in request.path %}bg-brand/10 text-brand-ink dark:bg-brand-ink/10{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100{% endif %}">
-          {% icon "bookmark" class="size-5 shrink-0" %}
-          <span :class="collapsed && 'lg:hidden'">Categories</span>
-        </a>
+        <div role="group" aria-labelledby="nav-classification" class="space-y-1 pt-4">
+          <p id="nav-classification" :class="collapsed && 'lg:hidden'" class="px-2.5 pb-1 text-xs font-medium tracking-wide text-stone-400 uppercase dark:text-stone-500">Classification</p>
+          <hr :class="collapsed && 'lg:block'" class="mx-2 mb-2 hidden border-stone-200 dark:border-stone-800">
+          {% url 'category_list' as categories_url %}
+          <a href="{{ categories_url }}" {% if categories_url in request.path %}aria-current="page"{% endif %} :title="collapsed && 'Categories'"
+             class="flex items-center gap-3 rounded-lg px-2.5 py-2 font-medium {% if categories_url in request.path %}bg-brand/10 text-brand-ink dark:bg-brand-ink/10{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100{% endif %}">
+            {% icon "bookmark" class="size-5 shrink-0" %}
+            <span :class="collapsed && 'lg:hidden'">Categories</span>
+          </a>
+          {% url 'tag_list' as tags_url %}
+          <a href="{{ tags_url }}" {% if tags_url in request.path %}aria-current="page"{% endif %} :title="collapsed && 'Tags'"
+             class="flex items-center gap-3 rounded-lg px-2.5 py-2 font-medium {% if tags_url in request.path %}bg-brand/10 text-brand-ink dark:bg-brand-ink/10{% else %}text-stone-600 hover:bg-stone-100 hover:text-stone-900 dark:text-stone-400 dark:hover:bg-stone-800 dark:hover:text-stone-100{% endif %}">
+            {% icon "tag" class="size-5 shrink-0" %}
+            <span :class="collapsed && 'lg:hidden'">Tags</span>
+          </a>
+        </div>
       </nav>
     </aside>
 

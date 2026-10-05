@@ -1,0 +1,43 @@
+{% extends "app.html" %}
+{% load icons %}
+
+{% block title %}Tags · kosha{% endblock %}
+
+{% block main %}
+  <div class="mx-auto w-full max-w-3xl px-4 py-8 sm:px-6">
+    <div class="flex items-center justify-between gap-4">
+      <h1 class="text-xl font-semibold tracking-tight text-stone-900 dark:text-stone-100">Tags</h1>
+      {% if tags %}
+        <a href="{% url 'tag_create' %}" class="btn-primary w-auto px-4">
+          {% icon "plus" class="size-4" %}
+          New tag
+        </a>
+      {% endif %}
+    </div>
+
+    {% if tags %}
+      <ul class="mt-6 flex flex-wrap gap-2 rounded-2xl bg-white p-4 ring-1 ring-stone-200 sm:p-5 dark:bg-stone-900 dark:ring-stone-800">
+        {% for tag in tags %}
+          <li class="min-w-0 max-w-full">
+            <a href="{% url 'tag_edit' tag.pk %}" class="flex h-9 items-center gap-1.5 rounded-full bg-stone-100 px-3.5 text-sm font-medium text-stone-700 ring-1 ring-stone-200 hover:bg-stone-200 hover:text-stone-900 dark:bg-stone-800 dark:text-stone-300 dark:ring-stone-700 dark:hover:bg-stone-700 dark:hover:text-stone-100">
+              {% icon "tag" class="size-3.5 shrink-0 text-stone-500 dark:text-stone-400" %}
+              <span class="truncate">{{ tag.name }}</span>
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <div class="mt-6 flex flex-col items-center rounded-2xl bg-white px-6 py-14 text-center ring-1 ring-stone-200 dark:bg-stone-900 dark:ring-stone-800">
+        <span class="flex size-12 items-center justify-center rounded-full bg-brand/10 text-brand-ink dark:bg-brand-ink/10">
+          {% icon "tag" class="size-6" %}
+        </span>
+        <h2 class="mt-4 text-base font-semibold text-stone-900 dark:text-stone-100">No tags yet</h2>
+        <p class="mt-1 max-w-xs text-sm text-stone-500 dark:text-stone-400">Tags group money across categories, like goa-trip-2026, reimbursable or gift.</p>
+        <a href="{% url 'tag_create' %}" class="btn-primary mt-6 w-auto px-4">
+          {% icon "plus" class="size-4" %}
+          New tag
+        </a>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

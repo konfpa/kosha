@@ -1,7 +1,7 @@
 from django import forms
 
 from .choices import COLOURS, ICONS
-from .models import Category
+from .models import Category, Tag
 
 
 class NoteField(forms.CharField):
@@ -32,4 +32,19 @@ class CategoryForm(forms.ModelForm):
         )
         if clash.exists():
             raise forms.ValidationError(f"You already have a category called “{name}”.")
+        return name
+
+
+class TagForm(forms.ModelForm):
+    class Meta:
+        model = Tag
+        fields = ("name",)
+
+    def clean_name(self):
+        name = self.cleaned_data["name"]
+        clash = self.instance.user.tags.filter(name__iexact=name).exclude(
+            pk=self.instance.pk
+        )
+        if clash.exists():
+            raise forms.ValidationError(f"You already have a tag called “{name}”.")
         return name
