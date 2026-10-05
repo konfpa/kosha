@@ -126,6 +126,7 @@ WORKDIR /app
 COPY --from=builder /opt/venv /opt/venv
 COPY manage.py ./
 COPY config/ config/
+COPY apps/ apps/
 COPY templates/ templates/
 COPY --from=assets /app/static/ static/
 COPY docker/gunicorn.conf.py docker/
@@ -133,7 +134,7 @@ COPY docker/gunicorn.conf.py docker/
 # collectstatic only needs SECRET_KEY to import settings; this one never
 # reaches the image.
 RUN SECRET_KEY=collectstatic python manage.py collectstatic --noinput --clear \
-    && python -m compileall -q config manage.py
+    && python -m compileall -q config apps manage.py
 
 # The one writable path. Docker seeds a fresh named volume from this directory,
 # ownership included, which is how the app user ends up able to write to it.
