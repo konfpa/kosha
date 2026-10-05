@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
+    "axes",
     "apps.accounts",
 ]
 
@@ -53,6 +54,7 @@ MIDDLEWARE = [
     "apps.accounts.sessions.max_age_middleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "axes.middleware.AxesMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"
@@ -90,6 +92,11 @@ CACHES = {
 
 AUTH_USER_MODEL = "accounts.User"
 
+AUTHENTICATION_BACKENDS = [
+    "axes.backends.AxesStandaloneBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
 LOGIN_URL = "login"
 
 LOGIN_REDIRECT_URL = "home"
@@ -110,6 +117,25 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
+
+
+# Login lockout (django-axes)
+
+AXES_FAILURE_LIMIT = 5
+
+AXES_COOLOFF_TIME = 1
+
+AXES_LOCKOUT_PARAMETERS = ["ip_address", "username"]
+
+AXES_RESET_ON_SUCCESS = True
+
+AXES_LOCKOUT_TEMPLATE = "registration/lockout.html"
+
+AXES_USERNAME_CALLABLE = "apps.accounts.lockout.username"
+
+AXES_CLIENT_IP_CALLABLE = "apps.accounts.lockout.client_ip"
+
+TRUST_X_FORWARDED_FOR = env.bool("TRUST_X_FORWARDED_FOR", default=False)
 
 
 # Internationalization

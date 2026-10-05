@@ -3,10 +3,11 @@ import re
 from django.conf import settings
 from django.contrib.auth import authenticate, get_user_model
 from django.core import mail
-from django.test import TestCase, override_settings
+from django.test import RequestFactory, TestCase, override_settings
 from django.urls import reverse
 
 from .forms import UserCreationForm
+from .lockout import client_ip
 from .sessions import LOGIN_AT_SESSION_KEY
 
 User = get_user_model()
@@ -36,7 +37,9 @@ class UserTests(TestCase):
 
     def test_authenticate_ignores_email_case(self):
         User.objects.create_user("ada@example.com", "Ada Lovelace", "pw-12345!")
-        user = authenticate(username="ADA@example.com", password="pw-12345!")
+        user = authenticate(
+            RequestFactory().post("/"), username="ADA@example.com", password="pw-12345!"
+        )
         self.assertIsNotNone(user)
 
     def test_creation_form_rejects_email_differing_only_in_case(self):
@@ -169,3 +172,55 @@ class PasswordResetTests(TestCase):
         self.client.post(reverse("logout"))
         response = self.client.get(link, follow=True)
         self.assertContains(response, "This link can't be used")
+
+
+@plain_static
+class LockoutTests(TestCase):
+    def setUp(self):
+        User.objects.create_user("ada@example.com", "Ada Lovelace", "pw-12345!")
+
+    def fail(self, username="ada@example.com", ip="203.0.113.1"):
+        return self.client.post(
+            reverse("login"),
+            {"username": username, "password": "nope"},
+            REMOTE_ADDR=ip,
+        )
+
+    def test_locks_out_after_five_failures(self):
+        for _ in range(4):
+            self.assertEqual(self.fail().status_code, 200)
+        response = self.fail()
+        self.assertEqual(response.status_code, 429)
+        self.assertContains(response, "Too many sign-in attempts", status_code=429)
+
+    def test_lockout_holds_for_the_right_password(self):
+        for _ in range(5):
+            self.fail()
+        response = self.client.post(
+            reverse("login"),
+            {"username": "ada@example.com", "password": "pw-12345!"},
+            REMOTE_ADDR="203.0.113.1",
+        )
+        self.assertEqual(response.status_code, 429)
+
+    def test_casing_and_new_addresses_share_one_count(self):
+        for i, username in enumerate(["ada@example.com", "ADA@example.com"] * 2):
+            self.fail(username, ip=f"203.0.113.{i}")
+        self.assertEqual(
+            self.fail("Ada@Example.com", ip="198.51.100.9").status_code, 429
+        )
+
+
+class ClientIpTests(TestCase):
+    def request(self, forwarded):
+        return RequestFactory().get(
+            "/", REMOTE_ADDR="172.17.0.1", HTTP_X_FORWARDED_FOR=forwarded
+        )
+
+    def test_ignores_forwarded_header_by_default(self):
+        self.assertEqual(client_ip(self.request("198.51.100.7")), "172.17.0.1")
+
+    @override_settings(TRUST_X_FORWARDED_FOR=True)
+    def test_uses_address_the_proxy_appended(self):
+        request = self.request("10.9.9.9, 198.51.100.7")
+        self.assertEqual(client_ip(request), "198.51.100.7")

@@ -24,6 +24,7 @@ x-app: &app
   environment:
     # Defaults, not overrides: values in .env win.
     SECURE_PROXY_SSL_HEADER: ${SECURE_PROXY_SSL_HEADER:-true}
+    TRUST_X_FORWARDED_FOR: ${TRUST_X_FORWARDED_FOR:-true}
   extra_hosts:
     - "host.docker.internal:host-gateway"
   volumes:
