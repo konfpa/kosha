@@ -1,4 +1,9 @@
-# kosha
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="static/img/logo-light.svg">
+    <img src="static/img/logo.svg" alt="kosha" height="48">
+  </picture>
+</h1>
 
 A Django web app for personal finance.
 
