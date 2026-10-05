@@ -19,8 +19,8 @@
       <ul class="mt-6 flex flex-wrap gap-2 rounded-2xl bg-white p-4 ring-1 ring-stone-200 sm:p-5 dark:bg-stone-900 dark:ring-stone-800">
         {% for tag in tags %}
           <li class="min-w-0 max-w-full">
-            <a href="{% url 'tag_edit' tag.pk %}" class="flex h-9 items-center gap-1.5 rounded-full bg-stone-100 px-3.5 text-sm font-medium text-stone-700 ring-1 ring-stone-200 hover:bg-stone-200 hover:text-stone-900 dark:bg-stone-800 dark:text-stone-300 dark:ring-stone-700 dark:hover:bg-stone-700 dark:hover:text-stone-100">
-              {% icon "tag" class="size-3.5 shrink-0 text-stone-500 dark:text-stone-400" %}
+            <a href="{% url 'tag_edit' tag.pk %}" class="group flex h-9 items-center gap-1.5 rounded-full bg-stone-100 px-3.5 text-sm font-medium text-stone-700 ring-1 ring-stone-200 transition-colors hover:bg-brand/10 hover:text-brand-ink hover:ring-brand/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand dark:bg-stone-800 dark:text-stone-300 dark:ring-stone-700 dark:hover:bg-brand-ink/10 dark:hover:text-brand-ink dark:hover:ring-brand-ink/40 dark:focus-visible:outline-brand-ink">
+              {% icon "tag" class="size-3.5 shrink-0 text-stone-500 transition-colors group-hover:text-brand-ink dark:text-stone-400" %}
               <span class="truncate">{{ tag.name }}</span>
             </a>
           </li>
