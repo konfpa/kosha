@@ -17,6 +17,24 @@ uv run manage.py migrate
 uv run manage.py runserver
 ```
 
+## Docker
+
+Development: runserver with autoreload plus a Tailwind watcher, both over the
+bind-mounted working tree. Dependencies and migrations are applied on start.
+
+```sh
+cp .env.example .env  # then set SECRET_KEY
+docker compose up
+```
+
+Production: gunicorn on a read-only image with compiled assets, published on
+`127.0.0.1` for a reverse proxy that terminates TLS. SQLite lives on the
+`kosha-data` volume unless `DATABASE_URL` says otherwise.
+
+```sh
+docker compose -f compose.prod.yaml up -d --build
+```
+
 ## Linting
 
 ```sh

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "config.health.healthz_middleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
@@ -57,7 +58,7 @@ ROOT_URLCONF = "config.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -117,6 +118,8 @@ USE_TZ = True
 STATIC_URL = env.str("STATIC_URL", default="static/")
 
 STATIC_ROOT = env.path("STATIC_ROOT", default=BASE_DIR / "staticfiles")
+
+STATICFILES_DIRS = [BASE_DIR / "static"]
 
 STORAGES = {
     "default": {

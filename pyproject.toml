@@ -5,6 +5,7 @@ requires-python = ">=3.14"
 dependencies = [
     "django>=6.1.1",
     "django-environ>=0.14.0",
+    "gunicorn>=26.2.0",
     "whitenoise>=6.12.0",
 ]
 
@@ -53,3 +54,4 @@ exclude = ["**/migrations/**"]
 "**/settings/**" = ["F403", "F405"]
 "**/apps.py" = ["PLC0415", "F401"]  # signal registration in AppConfig.ready()
 "manage.py" = ["PLC0415"]  # Django defers the import to give a friendly error
+"docker/gunicorn.conf.py" = ["INP001", "S108"]  # a config file, not a module; /dev/shm is intended

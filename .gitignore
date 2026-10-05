@@ -221,3 +221,9 @@ __marimo__/
 
 # Static files collected by collectstatic
 staticfiles/
+
+# Node
+node_modules/
+
+# Compiled by the tailwind container
+static/css/app.css

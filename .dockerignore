@@ -1,0 +1,26 @@
+# Host-built, for the host's platform.
+.venv/
+node_modules/
+
+# Generated inside the build.
+static/css/app.css
+staticfiles/
+
+# Secrets and local state.
+.env
+.env.*
+db.sqlite3*
+
+# Caches and metadata that would invalidate layers without changing behaviour.
+.git/
+.github/
+.ruff_cache/
+__pycache__/
+*.py[codz]
+
+# Not part of what serves requests.
+docs/
+CLAUDE.md
+LICENSE
+README.md
+compose*.yaml

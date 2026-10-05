@@ -1,0 +1,84 @@
+# Production stack: `docker compose -f compose.prod.yaml up -d --build`.
+#
+#   migrate   applies migrations, then exits
+#   django    gunicorn, started once migrate has succeeded
+#
+# The app terminates no TLS. It publishes on loopback only, and a reverse proxy
+# on this host forwards to it; that proxy holds the certificate, sets
+# X-Forwarded-Proto, and must strip any copy a client sent.
+#
+# The database defaults to SQLite on the kosha-data volume. Set DATABASE_URL in
+# .env to use a server instead.
+
+name: kosha-prod
+
+x-app: &app
+  image: ${DOCKER_IMAGE:-kosha}:${DOCKER_IMAGE_TAG:-latest}
+  build:
+    context: .
+    target: prod
+  env_file:
+    - path: .env
+      required: true
+      format: raw
+  environment:
+    # Defaults, not overrides: values in .env win.
+    SECURE_PROXY_SSL_HEADER: ${SECURE_PROXY_SSL_HEADER:-true}
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+  volumes:
+    - kosha-data:/var/lib/kosha
+  # Reaps zombies that gunicorn's master would not.
+  init: true
+  read_only: true
+  tmpfs:
+    - /tmp:size=64m,mode=1777
+    - /dev/shm:size=64m
+  security_opt:
+    - no-new-privileges:true
+  cap_drop:
+    - ALL
+  logging:
+    driver: json-file
+    options:
+      max-size: ${DOCKER_LOG_MAX_SIZE:-10m}
+      max-file: ${DOCKER_LOG_MAX_FILE:-3}
+
+services:
+  migrate:
+    <<: *app
+    # Any other policy would restart it after a successful exit, migrating in
+    # a loop.
+    restart: "no"
+    command: python manage.py migrate --noinput
+
+  django:
+    <<: *app
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      # Loopback only. Publishing on every interface would bypass the proxy and
+      # let clients forge X-Forwarded-Proto, which gunicorn and Django trust.
+      - "127.0.0.1:${DOCKER_HOST_PORT:-8000}:8000"
+    restart: unless-stopped
+    # Above gunicorn's graceful_timeout so in-flight requests drain.
+    stop_grace_period: 45s
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz/', timeout=5)"]
+      interval: 15s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+    deploy:
+      resources:
+        limits:
+          cpus: ${DOCKER_CPU_LIMIT:-1.0}
+          memory: ${DOCKER_MEMORY_LIMIT:-512m}
+
+volumes:
+  kosha-data:

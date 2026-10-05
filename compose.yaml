@@ -1,0 +1,84 @@
+# Development stack: `docker compose up`, then open http://localhost:8000.
+#
+#   django    autoreloading runserver over the bind-mounted working tree
+#   tailwind  Tailwind CLI in watch mode, rebuilding static/css/app.css
+#
+# The database is whatever DATABASE_URL in .env names (SQLite in the working
+# tree by default). Servers on your own machine are reached as
+# host.docker.internal, not localhost.
+
+name: kosha
+
+services:
+  django:
+    build:
+      context: .
+      target: dev
+      args:
+        DOCKER_UID: ${DOCKER_UID:-1000}
+        DOCKER_GID: ${DOCKER_GID:-1000}
+    # Run as you, so migrations and other files written into the working tree
+    # are not root-owned on the host.
+    user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
+    env_file:
+      # format: raw stops compose expanding `$` in values; without it a
+      # SECRET_KEY containing `$` differs between container and host runs.
+      - path: .env
+        required: false
+        format: raw
+    environment:
+      # A default, not an override: DEBUG in .env still wins.
+      DEBUG: ${DEBUG:-true}
+    volumes:
+      - .:/app
+      # Masks host directories built for the host's platform or stale locally.
+      - /app/.venv
+      - /app/node_modules
+      - /app/staticfiles
+      - uv-cache:/cache/uv
+    ports:
+      - "${DOCKER_HOST_PORT:-8000}:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    # For `breakpoint()` via `docker compose attach django`.
+    stdin_open: true
+    tty: true
+    # Catches runserver's autoreloader staying up after an import error with
+    # nothing listening, which `docker ps` would otherwise report as Up.
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz/', timeout=4)"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 120s
+    restart: unless-stopped
+    depends_on:
+      # On a fresh clone the stylesheet doesn't exist until npm install and the
+      # first build finish; waiting avoids serving unstyled pages.
+      tailwind:
+        condition: service_healthy
+
+  tailwind:
+    build:
+      context: .
+      target: tailwind
+      args:
+        DOCKER_UID: ${DOCKER_UID:-1000}
+        DOCKER_GID: ${DOCKER_GID:-1000}
+    user: "${DOCKER_UID:-1000}:${DOCKER_GID:-1000}"
+    # Without a TTY the watcher sees stdin close and exits. --watch=always in
+    # package.json guards the same failure; both are needed in practice.
+    tty: true
+    volumes:
+      - .:/app
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "test", "-s", "/app/static/css/app.css"]
+      interval: 2s
+      timeout: 3s
+      retries: 5
+      start_period: 180s
+    restart: unless-stopped
+
+volumes:
+  uv-cache:
