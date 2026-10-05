@@ -17,7 +17,30 @@
        @htmx:after-swap="drawer = false"
        hx-boost="true" hx-target="#main" hx-select="#main" hx-select-oob="#nav" hx-swap="outerHTML show:window:top" hx-indicator="#progress"
        hx-ext="preload" preload="mouseover">
-    <div id="progress" class="htmx-indicator pointer-events-none fixed inset-x-0 top-0 z-50 h-0.5 animate-pulse bg-brand"></div>
+    <div id="progress" class="pointer-events-none fixed inset-x-0 top-0 z-50 h-0.5 origin-left bg-brand-ink opacity-0"></div>
+    <script>
+      // htmx marks the bar while a page loads. It creeps towards the end, then
+      // fills from wherever it got to and fades once the page lands. CSS
+      // transitions can't start from an animation's position, hence a script.
+      (() => {
+        const bar = document.getElementById("progress");
+        let creep, show;
+        new MutationObserver(() => {
+          const loading = bar.classList.contains("htmx-request");
+          if (loading && !creep) {
+            creep = bar.animate([{ transform: "scaleX(0)" }, { transform: "scaleX(0.9)" }], { duration: 10000, easing: "cubic-bezier(0.1, 0.7, 0.3, 1)", fill: "forwards" });
+            // Preloaded pages arrive at once, so they never show the bar.
+            show = bar.animate([{ opacity: 1 }], { delay: 150, fill: "forwards" });
+          } else if (!loading && creep) {
+            const { transform, opacity } = getComputedStyle(bar);
+            creep.cancel();
+            show.cancel();
+            creep = null;
+            bar.animate([{ transform, opacity }, { transform: "none", opacity, offset: 0.4 }, { transform: "none", opacity: 0 }], { duration: 500, easing: "ease-out" });
+          }
+        }).observe(bar, { attributeFilter: ["class"] });
+      })();
+    </script>
     <div x-cloak x-show="drawer" x-transition.opacity @click="drawer = false" class="fixed inset-0 z-20 bg-stone-900/30 lg:hidden dark:bg-black/50"></div>
 
     <aside :class="[drawer ? 'translate-x-0' : '-translate-x-full', collapsed ? 'lg:w-16' : '', ready ? 'transition-[translate,width] duration-200' : '']"
