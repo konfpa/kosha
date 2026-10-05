@@ -37,36 +37,56 @@ class IconTests(SimpleTestCase):
             render('{% icon "no-such-icon" %}')
 
 
+BOOSTED = {"HX-Request": "true", "HX-Boosted": "true"}
+PRELOADED = {**BOOSTED, "HX-Preloaded": "true"}
+
+
 @plain_static
 class BoostTests(TestCase):
-    def test_signed_out_boosted_request_loads_the_full_page(self):
-        url = reverse("category_list")
-        response = self.client.get(
-            url, headers={"HX-Request": "true", "HX-Boosted": "true"}
-        )
-        self.assertEqual(response.headers["HX-Redirect"], url)
-
-    def test_signed_in_boosted_request_renders_the_page(self):
+    def sign_in(self):
         user = get_user_model().objects.create_user(
             "ada@example.com", "Ada", "pw-12345!"
         )
         self.client.force_login(user)
-        response = self.client.get(
-            reverse("category_list"),
-            headers={"HX-Request": "true", "HX-Boosted": "true"},
-        )
+
+    def test_signed_out_boosted_request_loads_the_full_page(self):
+        url = reverse("category_list")
+        response = self.client.get(url, headers=BOOSTED)
+        self.assertEqual(response.headers["HX-Redirect"], url)
+
+    def test_signed_in_boosted_request_renders_the_page(self):
+        self.sign_in()
+        response = self.client.get(reverse("category_list"), headers=BOOSTED)
         self.assertContains(response, '<main id="main"')
         self.assertNotIn("HX-Redirect", response.headers)
 
     def test_boosted_form_with_errors_stays_out_of_history(self):
-        user = get_user_model().objects.create_user(
-            "ada@example.com", "Ada", "pw-12345!"
-        )
-        self.client.force_login(user)
+        self.sign_in()
         response = self.client.post(
-            reverse("category_create"),
-            {"name": ""},
-            headers={"HX-Request": "true", "HX-Boosted": "true"},
+            reverse("category_create"), {"name": ""}, headers=BOOSTED
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.headers["HX-Push-Url"], "false")
+
+    def test_preloaded_page_is_briefly_cacheable_per_session(self):
+        self.sign_in()
+        response = self.client.get(reverse("category_list"), headers=PRELOADED)
+        self.assertEqual(response.headers["Cache-Control"], "private, max-age=10")
+        self.assertIn("Cookie", response.headers["Vary"])
+
+    def test_only_preloaded_pages_are_cacheable(self):
+        self.sign_in()
+        response = self.client.get(reverse("category_list"), headers=BOOSTED)
+        self.assertNotIn("Cache-Control", response.headers)
+
+    def test_signed_out_preload_is_not_cacheable(self):
+        response = self.client.get(reverse("category_list"), headers=PRELOADED)
+        self.assertNotIn("Cache-Control", response.headers)
+
+    def test_every_post_changes_the_data_version(self):
+        self.sign_in()
+        versions = set()
+        for _ in range(2):
+            self.client.post(reverse("category_create"), {"name": ""})
+            versions.add(self.client.cookies["data_version"].value)
+        self.assertEqual(len(versions), 2)
