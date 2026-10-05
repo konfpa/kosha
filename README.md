@@ -12,6 +12,9 @@ A Django web app for personal finance.
 ```sh
 uv sync
 uv run prek install
+cp .env.example .env  # then set SECRET_KEY; see comments in the file
+uv run manage.py migrate
+uv run manage.py runserver
 ```
 
 ## Linting
