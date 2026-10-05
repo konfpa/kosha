@@ -9,5 +9,6 @@
   </head>
   <body class="min-h-screen bg-white text-gray-900 antialiased">
     {% block content %}{% endblock %}
+    <script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("{% url 'service_worker' %}");</script>
   </body>
 </html>

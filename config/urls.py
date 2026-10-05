@@ -26,4 +26,23 @@ urlpatterns = [
         "", login_required(TemplateView.as_view(template_name="home.html")), name="home"
     ),
     path("", include("apps.accounts.urls")),
+    path(
+        "manifest.webmanifest",
+        TemplateView.as_view(
+            template_name="pwa/manifest.webmanifest",
+            content_type="application/manifest+json",
+        ),
+        name="manifest",
+    ),
+    # Served from the root so the worker's scope covers the whole site.
+    path(
+        "sw.js",
+        TemplateView.as_view(template_name="pwa/sw.js", content_type="text/javascript"),
+        name="service_worker",
+    ),
+    path(
+        "offline/",
+        TemplateView.as_view(template_name="pwa/offline.html"),
+        name="offline",
+    ),
 ]

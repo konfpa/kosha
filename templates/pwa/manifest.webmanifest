@@ -1,0 +1,16 @@
+{% load static %}{
+  "id": "{% url 'home' %}",
+  "name": "kosha",
+  "short_name": "kosha",
+  "description": "Personal finance",
+  "start_url": "{% url 'home' %}",
+  "scope": "{% url 'home' %}",
+  "display": "standalone",
+  "background_color": "#F5F5F4",
+  "theme_color": "#0E5A5B",
+  "icons": [
+    {"src": "{% static 'icons/icon-192.png' %}", "sizes": "192x192", "type": "image/png"},
+    {"src": "{% static 'icons/icon-512.png' %}", "sizes": "512x512", "type": "image/png"},
+    {"src": "{% static 'icons/icon-maskable-512.png' %}", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}

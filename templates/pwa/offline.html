@@ -1,0 +1,11 @@
+{% extends "registration/layout.html" %}
+{% load static %}
+
+{% block title %}Offline · kosha{% endblock %}
+
+{% block page %}
+  <img src="{% static 'img/mark.svg' %}" alt="kosha" class="size-11">
+  <h1 class="mt-5 text-xl font-semibold tracking-tight text-stone-900">You're offline</h1>
+  <p class="mt-1 text-sm text-stone-500">kosha needs a connection. Check yours and try again.</p>
+  <a href="{% url 'home' %}" class="btn-primary mt-8 max-w-xs">Try again</a>
+{% endblock %}
