@@ -1,0 +1,50 @@
+[project]
+name = "kosha"
+version = "0.1.0"
+requires-python = ">=3.14"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "prek>=0.5.5",
+    "ruff>=0.16.10",
+]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
+    "D",       # docstrings are optional
+    "CPY",     # no per-file copyright headers
+    "ANN",     # leave typing enforcement to a type checker
+    "E501",    # formatter owns line length
+    "COM812",  # conflicts with formatter
+    "EM101",   # inline exception messages are fine
+    "EM102",
+    "TRY003",
+    "TD002",   # TODOs don't need an author or issue link
+    "TD003",
+    "FIX002",
+    "RUF012",  # Django class attrs (Meta, admin, forms) are mutable by design
+    "SLF001",  # Model._meta is public API in practice
+    "ARG002",  # Django overrides often receive unused args (request, *args, **kwargs)
+]
+exclude = ["**/migrations/**"]
+
+[tool.ruff.lint.per-file-ignores]
+"**/{tests/**,test_*.py,tests.py,conftest.py}" = [
+    "S101",
+    "S106",
+    "PLR2004",
+    "PT009",   # Django TestCase uses unittest assertions
+    "PT027",
+    "ARG",
+    "FBT",
+]
+"**/settings/**" = ["F403", "F405"]
+"**/apps.py" = ["PLC0415", "F401"]  # signal registration in AppConfig.ready()
