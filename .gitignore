@@ -227,3 +227,6 @@ node_modules/
 
 # Compiled by the tailwind container
 static/css/app.css
+
+# Editor swap and lock files
+*.swp
